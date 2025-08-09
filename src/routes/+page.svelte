@@ -18,6 +18,10 @@
 	}
 </script>
 
-<h1>Recurring Todo List</h1>
+<h1 class="h1">Recurring Todo List</h1>
 
-<button onclick={handleSignIn}>Sign in with Google</button>
+<div class="flex items-center justify-center">
+	<button type="button" class="btn preset-tonal-primary" onclick={handleSignIn}
+		>Sign in with Google</button
+	>
+</div>

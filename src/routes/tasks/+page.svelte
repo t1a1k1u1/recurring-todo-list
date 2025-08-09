@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { firekitUser, firekitCollection } from 'svelte-firekit';
-	import { where } from 'firebase/firestore';
+	import { Timestamp, where } from 'firebase/firestore';
+	import IconTrash from '@lucide/svelte/icons/trash';
 
 	interface Task {
 		id: string;
 		userId: string;
 		title: string;
 		intervalDays: number;
-		lastCompleted: Date;
-		nextDueDate: Date;
+		lastCompleted: Timestamp;
+		nextDueDate: Timestamp;
 	}
 
 	$effect(() => {
@@ -18,30 +19,36 @@
 		}
 	});
 
-	const tasks = firekitCollection<Task>('tasks', [where('userId', '==', firekitUser.uid)]);
+	const tasksCollection = firekitCollection<Task>('tasks', [
+		where('userId', '==', firekitUser.uid)
+	]);
+	const tasks = $derived(tasksCollection.data);
 </script>
 
 {#if firekitUser.isAuthenticated}
-	<h1>Tasks</h1>
+	<h1 class="h1">Tasks</h1>
 
-	{#if tasks.data}
-		{#if tasks.data.length > 0}
-			<ul>
-				{#each tasks.data as task (task.id)}
-					<li>
-						<h2>{task.title}</h2>
-						<p>Interval: {task.intervalDays} days</p>
-						<p>Last Completed: {new Date(task.lastCompleted).toLocaleDateString()}</p>
-						<p>Next Due: {new Date(task.nextDueDate).toLocaleDateString()}</p>
-					</li>
-				{/each}
-			</ul>
-		{:else}
-			<p>You have no tasks.</p>
-		{/if}
-	{:else}
-		<p>Loading tasks...</p>
-	{/if}
+	<table class="table caption-bottom">
+		<thead>
+			<tr>
+				<th>Title</th>
+				<th>Interval (days)</th>
+				<th>Next Due Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each tasks as task (task.id)}
+				<tr>
+					<td>{task.title}</td>
+					<td>{task.intervalDays}</td>
+					<td>{task.nextDueDate.toDate().toLocaleDateString()}</td>
+					<td
+						><button type="button" class="btn hover:preset-tonal-primary"><IconTrash /></button></td
+					>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 {:else}
 	<p>Loading...</p>
 {/if}
