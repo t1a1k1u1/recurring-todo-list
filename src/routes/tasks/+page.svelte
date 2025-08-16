@@ -1,17 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { firekitUser, firekitCollection } from 'svelte-firekit';
-	import { Timestamp, where } from 'firebase/firestore';
-	import IconTrash from '@lucide/svelte/icons/trash';
-
-	interface Task {
-		id: string;
-		userId: string;
-		title: string;
-		intervalDays: number;
-		lastCompleted: Timestamp;
-		nextDueDate: Timestamp;
-	}
+	import { where } from 'firebase/firestore';
+	import type { Task } from '$lib/types/task';
+	import TaskCard from '$lib/components/TaskCard.svelte';
 
 	$effect(() => {
 		if (!firekitUser.isAuthenticated) {
@@ -23,32 +15,26 @@
 		where('userId', '==', firekitUser.uid)
 	]);
 	const tasks = $derived(tasksCollection.data);
+
+	const handleDismiss = (task: Task) => {
+		console.log('Dismiss:', task);
+	};
+
+	const handleDelete = (task: Task) => {
+		console.log('Delete:', task);
+	};
 </script>
 
 {#if firekitUser.isAuthenticated}
 	<h1 class="h1">Tasks</h1>
 
-	<table class="table caption-bottom">
-		<thead>
-			<tr>
-				<th>Title</th>
-				<th>Interval (days)</th>
-				<th>Next Due Date</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each tasks as task (task.id)}
-				<tr>
-					<td>{task.title}</td>
-					<td>{task.intervalDays}</td>
-					<td>{task.nextDueDate.toDate().toLocaleDateString()}</td>
-					<td
-						><button type="button" class="btn hover:preset-tonal-primary"><IconTrash /></button></td
-					>
-				</tr>
-			{/each}
-		</tbody>
-	</table>
+	{#each tasks as task (task.id)}
+		<TaskCard {task} onDismiss={handleDismiss} onDelete={handleDelete} />
+	{/each}
 {:else}
 	<p>Loading...</p>
 {/if}
+
+<pre>
+	{JSON.stringify(tasks, null, 2)}
+</pre>
